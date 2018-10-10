@@ -4,4 +4,4 @@
 本次测试url：https://sou.zhaopin.com/?pageSize=60&jl=765&sf=10001&st=15000&kw=java&kt=3&=10001 
 本次测试文件名：java岗位信息表。
 # 详细信息：
-My_csdn:
+My_csdn:https://blog.csdn.net/qq_34769196/article/details/82993985 
