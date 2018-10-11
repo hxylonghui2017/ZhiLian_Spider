@@ -1,11 +1,74 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from bs4 import BeautifulSoup
 import xlwt
 import csv
 import requests
+import time
+import re
 
 #url = 'https://xiaoyuan.zhaopin.com/full/538/0_0_160000_1_0_0_0_1_0'
 #url = 'https://sou.zhaopin.com/?pageSize=60&jl=765&sf=10001&st=15000&kw=java&kt=3&=10001'
+
+search_url = 'https://i.zhaopin.com/'
+# main_browser = webdriver.Firefox()
+# wait = WebDriverWait(main_browser, 10)
+def create_browser():
+    main_browser = webdriver.Firefox()
+    wait = WebDriverWait(main_browser, 10)
+    return main_browser, wait
+
+def next_page(main_browser, wait, max_page):
+    try:
+        page_click = wait.until(
+                EC.element_to_be_clickable((By.XPATH, '//*[@id="pagination_content"]/div/button[2]'))
+            )
+        page_click.click()
+        # print(main_browser.current_url)
+        re_url = main_browser.current_url
+        pattern = re.compile('/?p=(.*?)&', re.S)
+        find = pattern.findall(re_url)
+        if len(find) > 0:
+            #print(int(find[0]))
+            if int(find[0])>max_page:
+                return None
+        return main_browser.page_source
+    except TimeoutException:
+        return None
+
+def search_key(keyword, main_browser, wait):
+    print("正在搜索："+ keyword)
+    try:
+        main_browser.get(search_url)
+        # input = browser.find_element_by_class_name('zp-search-input')
+        input = wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, '.zp-search-input'))
+        )
+        # btn_search = browser.find_element_by_class_name('zp-search-btn')
+        btn_search = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '.zp-search-btn'))
+        )
+        input.send_keys(keyword)
+        time.sleep(2)
+        btn_search.click()
+        #处理多个标签页
+        handle = main_browser.current_window_handle
+        handles = main_browser.window_handles
+        if len(handles) > 1:
+            for h in handles:
+                if h != handle:
+                    main_browser.switch_to_window(h)
+                    time.sleep(2)
+                    #print(main_browser.page_source)
+                    return main_browser.page_source
+        else:
+            return main_browser.page_source
+    except TimeoutException:
+        return search_key(keyword)
+
 def get_content(arcurl):
     browser = webdriver.Firefox()
     browser.get(arcurl)
@@ -143,13 +206,33 @@ def write_csv_rows(path, headers, rows):
        f_csv = csv.DictWriter(f, headers)
        f_csv.writerows(rows)
 
-def csv_write(csv_name, headers, html):
-    write_csv_headers(csv_name, headers)
+def csv_write(csv_name, headers, html, writeheader = True):
+    if writeheader:
+        write_csv_headers(csv_name, headers)
     items, others = parse_page_shezhao(html)
-    print(others)
+    #print(others)
     write_csv_rows(csv_name, headers, others)
 
 def main():
+    filename = input("请输入搜索关键词：\n").replace(' ','_')
+    # print(search_key('python'))
+    max_page = int(input('请输入存储页数：\n'))
+    b, w = create_browser()
+    html = search_key(filename, b, w)
+    csv_name = filename + '.csv'
+    headers = ['职位链接', '职位', '薪资', '基本要求', '职责描述', '公司', '公司规模', '公司链接']
+    csv_write(csv_name, headers, html)
+    while True:
+        # b.close()
+        time.sleep(2)
+        html = next_page(b, w, max_page)
+        if not html:
+            break
+        else:
+            csv_write(csv_name, headers, html, False)
+    b.quit()
+
+def main2():
     filename = input("请输入存储文件名：\n")
     while True:
         url = input("请输入URL：\n")
