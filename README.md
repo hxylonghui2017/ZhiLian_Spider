@@ -5,3 +5,5 @@
 本次测试文件名：java岗位信息表。
 # 详细信息：
 My_csdn:https://blog.csdn.net/qq_34769196/article/details/82993985 
+# 打包：
+pyinstaller -F -i win.ico -w qt_ui_use.py -p img_list_rc.py -p main_zhilian.py -p qt.py
