@@ -39,10 +39,10 @@ def next_page(main_browser, wait, max_page):
     except TimeoutException:
         return None
 
-def search_key(keyword, main_browser, wait):
+def search_key(keyword, main_browser, wait, url=search_url):
     print("正在搜索："+ keyword)
     try:
-        main_browser.get(search_url)
+        main_browser.get(url)
         # input = browser.find_element_by_class_name('zp-search-input')
         input = wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, '.zp-search-input'))
@@ -52,7 +52,7 @@ def search_key(keyword, main_browser, wait):
             EC.element_to_be_clickable((By.CSS_SELECTOR, '.zp-search-btn'))
         )
         input.send_keys(keyword)
-        time.sleep(2)
+        time.sleep(1)
         btn_search.click()
         #处理多个标签页
         handle = main_browser.current_window_handle
@@ -61,7 +61,7 @@ def search_key(keyword, main_browser, wait):
             for h in handles:
                 if h != handle:
                     main_browser.switch_to_window(h)
-                    time.sleep(2)
+                    time.sleep(1)
                     #print(main_browser.page_source)
                     return main_browser.page_source
         else:
@@ -224,7 +224,7 @@ def main():
     csv_write(csv_name, headers, html)
     while True:
         # b.close()
-        time.sleep(2)
+        time.sleep(1)
         html = next_page(b, w, max_page)
         if not html:
             break
