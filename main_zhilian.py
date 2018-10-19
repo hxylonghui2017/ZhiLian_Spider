@@ -100,14 +100,26 @@ def parse_page_shezhao(html):
     message = []
     message_dict = []
     div_list = soup.select('#listContent > div')
+    # print(len(div_list))
     for div in div_list:
         messdict = {}
-        div_infobox = div.select('div.listItemBox > div.infoBox')
+        job_l = ""
+        jobname = ""
+        job_saray = ""
+        job_demand = ""
+        desc = ""
+        company_name = ""
+        company_desc = ""
+        company_link = ""
+        jobadr = ""
+        div_infobox = div.select('div.contentpile__content__wrapper__item > div.contentpile__content__wrapper__item__info')
         if len(div_infobox) > 0:
             nameBox = div_infobox[0].select('.nameBox > div.jobName')
             if len(nameBox) > 0:
                 jobname = nameBox[0].get_text()
-                job_link = nameBox[0].select('a')[0].attrs['href']
+                job_l = nameBox[0].select('a')[0].attrs['href']
+                # print(job_l)
+                # print(job_l)
             companyBox = div_infobox[0].select('.nameBox > div.commpanyName')
             if len(companyBox) > 0:
                 company_name = companyBox[0].get_text()
@@ -115,9 +127,9 @@ def parse_page_shezhao(html):
             jobDesc = div_infobox[0].select('.descBox > div.jobDesc')
             if len(jobDesc) > 0:
                 jobadr = jobDesc[0].get_text()
-                job_saray = jobDesc[0].select('p.job_saray')[0].get_text()
-                job_demand = jobDesc[0].select('.job_demand')[0].get_text()
-            commpanyDesc = div_infobox[0].select('.descBox > div.commpanyDesc')
+                job_saray = jobDesc[0].select('p.contentpile__content__wrapper__item__info__box__job__saray')[0].get_text()
+                job_demand = jobDesc[0].select('.contentpile__content__wrapper__item__info__box__job__demand')[0].get_text()
+            commpanyDesc = div_infobox[0].select('.descBox > div.contentpile__content__wrapper__item__info__box__job__comdec')
             if len(commpanyDesc) > 0:
                 jobadr += " " + commpanyDesc[0].get_text()
                 company_desc = commpanyDesc[0].get_text()
@@ -125,10 +137,10 @@ def parse_page_shezhao(html):
             desc = ""
             for xvar in job_welfare:
                 desc += xvar.get_text() + "; "
-            commpanyStatus = div_infobox[0].select('div > div.commpanyStatus')
+            commpanyStatus = div_infobox[0].select('div > div.contentpile__content__wrapper__item__info__box__status')
             desc += "【" + commpanyStatus[0].get_text() + "】"
             # ['职位链接', '职位', '薪资', '基本要求', '职责描述', '公司', '公司规模', '公司链接']
-        messdict['职位链接'] = job_link
+        messdict['职位链接'] = job_l
         messdict['职位']=jobname
         messdict['薪资']=job_saray
         messdict['基本要求'] = job_demand
@@ -138,7 +150,7 @@ def parse_page_shezhao(html):
         messdict['公司链接'] = company_link
         # messdict['相关性质'] = jobadr
         # messdict['职责描述'] = desc
-        message.append([job_link, jobname, company_name, company_link, jobadr, desc])
+        message.append([job_l, jobname, company_name, company_link, jobadr, desc])
         message_dict.append(messdict)
     return message, message_dict
 
